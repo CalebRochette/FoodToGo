@@ -51,11 +51,15 @@ public class LoginActivity extends AppCompatActivity {
      */
     private UserLoginTask mAuthTask = null;
 
+    //objects used to keep track of components
     private EditText mEmailView;
     private EditText mPasswordView;
-    public Users theUsers;
     private TextView registerLink;
 
+    //stores the users
+    private Users theUsers;
+
+    //sets up the activity fields
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -65,6 +69,8 @@ public class LoginActivity extends AppCompatActivity {
         theUsers = Users.getInstance();
         mPasswordView = (EditText) findViewById(R.id.password);
         registerLink = (TextView) findViewById(R.id.tvRegister);
+
+        //handles when the user clicks the register link
         registerLink.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
@@ -72,6 +78,8 @@ public class LoginActivity extends AppCompatActivity {
                 LoginActivity.this.startActivity(registerIntent);
             }
         });
+
+        //
         mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
@@ -83,6 +91,7 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
 
+        //handles when the user clicks the sign in button
         Button mEmailSignInButton = (Button) findViewById(R.id.email_sign_in_button);
         mEmailSignInButton.setOnClickListener(new OnClickListener() {
             @Override
@@ -145,29 +154,18 @@ public class LoginActivity extends AppCompatActivity {
             mAuthTask.login();
         }
     }
-
+    //checks if the string is a valid email
     private boolean isEmailValid(String email) {
         //TODO: Replace this with your own logic
         return email.contains("@");
     }
 
+    //checks if the string is a valid password
     private boolean isPasswordValid(String password) {
         //TODO: Replace this with your own logic
         return password.length() > 4;
     }
 
-
-
-
-    private interface ProfileQuery {
-        String[] PROJECTION = {
-                ContactsContract.CommonDataKinds.Email.ADDRESS,
-                ContactsContract.CommonDataKinds.Email.IS_PRIMARY,
-        };
-
-        int ADDRESS = 0;
-        int IS_PRIMARY = 1;
-    }
 
     /**
      * Represents an asynchronous login/registration task used to authenticate
@@ -178,25 +176,25 @@ public class LoginActivity extends AppCompatActivity {
         private final String mEmail;
         private final String mPassword;
 
+        //creates the login details
         UserLoginTask(String email, String password) {
             mEmail = email;
             mPassword = password;
         }
 
+        //attempts to log the user in
         protected void login() {
             // TODO: attempt authentication against a network service.
             View focusView = null;
-            ArrayList<String> credentials = theUsers.getCredentials();
+            ArrayList<Users.User> credentials = theUsers.getCredentials();
             for (int i = 0; i < credentials.size(); i++) {
-                String credential = credentials.get(i);
-                String[] pieces = credential.split(":");
-                if (pieces[0].equals(mEmail)) {
+                Users.User credential = credentials.get(i);
+                if (credential.getEmail().equals(mEmail)) {
                     // Account exists, return true if the password matches.
 
-                     if(pieces[1].equals(mPassword)) {
+                     if(credential.getPassword().equals(mPassword)) {
                          theUsers.setLoggedIn(i);
                          Intent loggedIn = new Intent(LoginActivity.this, WelcomeActivity.class);
-                         loggedIn.putExtra("Login", theUsers.getLoggedIn());
                          startActivity(loggedIn);
                      } else {
                          focusView = mPasswordView;
@@ -208,20 +206,7 @@ public class LoginActivity extends AppCompatActivity {
             focusView.requestFocus();
 
         }
-        protected void onPostExecute(final Boolean success) {
-            mAuthTask = null;
 
-            if (success) {
-                finish();
-            } else {
-                mPasswordView.setError(getString(R.string.error_incorrect_password));
-                mPasswordView.requestFocus();
-            }
-        }
-
-        protected void onCancelled() {
-            mAuthTask = null;
-        }
     }
 
 
